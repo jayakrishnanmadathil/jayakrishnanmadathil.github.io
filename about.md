@@ -8,7 +8,7 @@ I am a PhD student from India working on MD simulations of proteins and other bi
 
 ### More Information
 
-https://www.imsc.res.in/~devanandt/
+[https://www.imsc.res.in/~devanandt/](https://www.imsc.res.in/~devanandt/)
 
 ### Contact me
 
