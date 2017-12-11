@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-I am a PhD student from India working on MD simulations of proteins and other biomolecules. Also very much excited about Complex Systems and Machine learning. 
+I am a PhD student from India working on MD simulations of proteins and other biomolecules. Also very much excited about Complex Systems, Machine learning and blockchain based technologies. 
 
 ### More Information
 
