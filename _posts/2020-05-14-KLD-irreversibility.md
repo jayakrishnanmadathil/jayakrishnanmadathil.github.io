@@ -70,8 +70,6 @@ This shows how we can quantify the irreversibility.
 I am a person who likes to tinker with models using numerical experiments. So I might come up with few simulation experiments. Watch out for those articles! :)
 
 
-
-
 ## References
 
 [0]: [KL divergence expalined: A blog article](https://www.countbayesie.com/blog/2017/5/9/kullback-leibler-divergence-explained)
