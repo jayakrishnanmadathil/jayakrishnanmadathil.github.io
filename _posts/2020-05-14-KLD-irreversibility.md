@@ -3,8 +3,6 @@ layout: post
 title: KL divergence as a measure to quantify irreversibility in non-equilibrium systems
 ---
 
-<div class='text-justify'>
-
 Hello friends... @dexterdev is back with his new article. This one is not about coarse-grained simulations. For the past few days I was thinking about active matter systems, non-equilibrium statistical mechanics and irreversibility in the systems etc. And I want to share my excitement about what I learned recently. This article will try to give you an idea about irreversibility in systems which are operating far away from equilibrium.
 
 Active matter is always a dear topic to me. As some of you might know that I was an electronics engineering student in past and most of the magic in electronics are done by active systems like amplifiers, digital switches, and more complicated circuits like microprocessors etc, which make use of the concept called feedback mechanism. Now I realize that all systems including "active" electronics circuits fall in the category of non-equilibrium systems. Some of the attempts to understand these systems are by perturbing them and studying their responses. They call it Linear response theory in Physics. Engineers always do this kind of analysis to understand circuits or other systems. But I am pretty sure that most students in engineering are unaware of the fact that they are dealing with non-equilibrium systems(when dealing with say Amplifiers). One reason for this situation is that Statistical Mechanics is not taught in engineering disciplines(at least in India when I was a student). But the good thing is that we learn Information Theory. This is something most physics students miss in their course work I feel. So the fact is that most of the students in engineering and physics go through many concepts without knowing(or appreciating) their equivalence and primarily this is due to the language barrier in both streams. 
@@ -86,4 +84,3 @@ I am a person who likes to tinker with models using numerical experiments. So I 
 
 [4]: [Casanova-Morales, Nathalie, et al. "Structural characterization of the saxitoxin-targeting APTSTX1 aptamer using optical tweezers and molecular dynamics simulations." PloS one 14.11 (2019).](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0222468)
 
-</div>
