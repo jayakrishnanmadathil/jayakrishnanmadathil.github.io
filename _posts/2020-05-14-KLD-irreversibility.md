@@ -1,4 +1,7 @@
-# KL divergence as a measure to quantify irreversibility in non-equilibrium systems
+---
+layout: post
+title: KL divergence as a measure to quantify irreversibility in non-equilibrium systems
+---
 
 <div class='text-justify'>
 
