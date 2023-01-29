@@ -128,8 +128,6 @@ body { color: #333; background-color: white; }
 
 a { color: red; text-decoration: none; }
 
-a:link {  color: #D4544A; }
-
 a:hover { text-decoration: underline; }
 
 pre, code { background-color: #eee; border-radius: 3px; }
