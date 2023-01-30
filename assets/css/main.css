@@ -128,7 +128,7 @@ body { color: #333; background-color: white; }
 
 a { color: red; text-decoration: none; }
 
-.link:hover { color: #FF0000; }
+a:link { color: red; }
 
 a:hover { text-decoration: underline; }
 
