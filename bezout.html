@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reconstructing a Proof: Bézout's Identity</title>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    processEscapes: true
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root {
+  --bg:#f7f7f8; --panel:#fff; --text:#1f2937; --muted:#6b7280;
+  --border:#d1d5db; --accent:#334155; --good:#166534; --goodbg:#dcfce7;
+  --warn:#92400e; --warnbg:#fef3c7;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--text); background:var(--bg); line-height:1.5;
+}
+main { max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+h1 { margin:0 0 8px; font-size:1.8rem; }
+h2 { font-size:1.15rem; margin:0 0 10px; }
+.theorem,.instructions,.feedback {
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:16px; margin:14px 0;
+}
+.theorem strong { display:block; margin-bottom:6px; }
+.controls { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; }
+button {
+  border:1px solid var(--border); background:var(--panel); color:var(--text);
+  border-radius:8px; padding:9px 12px; font-size:.95rem; cursor:pointer;
+}
+button.primary { background:var(--accent); color:white; border-color:var(--accent); }
+.board { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+@media(max-width:760px) { .board { grid-template-columns:1fr; } }
+.column {
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:14px; min-width:0;
+}
+.sub { color:var(--muted); font-size:.9rem; margin-bottom:10px; }
+.list { min-height:90px; display:flex; flex-direction:column; gap:8px; }
+.card {
+  border:1px solid var(--border); border-radius:10px; background:#fff;
+  padding:10px; cursor:grab;
+}
+.card.dragging { opacity:.55; }
+.card.correct { border-color:#86efac; background:#f0fdf4; }
+.card.problem { border-color:#fca5a5; background:#fff7f7; }
+.num { font-weight:700; margin-right:6px; }
+.mini-controls { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.mini-controls button { padding:5px 8px; font-size:.82rem; }
+.feedback { min-height:76px; }
+.feedback.good { background:var(--goodbg); border-color:#86efac; color:var(--good); }
+.feedback.warn { background:var(--warnbg); border-color:#fcd34d; color:var(--warn); }
+.status { font-size:.9rem; color:var(--muted); margin-top:6px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Reconstructing a Proof: Bézout's Identity</h1>
+
+<section class="theorem">
+<strong>Theorem (Bézout's Identity).</strong>
+If \(a\) and \(b\) are positive integers, then there exist integers \(x\) and \(y\)
+such that \(\gcd(a,b)=ax+by\).
+</section>
+
+<section class="instructions">
+<p>Some of the numbered sentence clusters below can be arranged to form a coherent proof. Some are incorrect or irrelevant.</p>
+<p><strong>Your task:</strong> move the useful sentences into the proof column and arrange them in the correct order. Then choose <strong>Check proof</strong>.</p>
+<p>You can drag cards, or use the buttons on each card. Hints are designed to point you toward the logical connection without immediately giving away the answer.</p>
+</section>
+
+<div class="controls">
+<button class="primary" id="checkBtn" type="button">Check proof</button>
+<button id="hintBtn" type="button">Give me a hint</button>
+<button id="resetBtn" type="button">Reset</button>
+</div>
+
+<div class="board">
+<section class="column">
+<h2>Sentence bank</h2>
+<div class="sub">These are not in proof order.</div>
+<div id="bank" class="list"></div>
+</section>
+
+<section class="column">
+<h2>Your proof</h2>
+<div class="sub">Put only the sentences you think belong in the proof here.</div>
+<div id="proof" class="list"></div>
+</section>
+</div>
+
+<section id="feedback" class="feedback" aria-live="polite">
+Build your proof, then choose <strong>Check proof</strong>.
+</section>
+<div class="status" id="status"></div>
+</main>
+
+<script>
+(() => {
+const sentences = [{"id": 1, "text": "Divide \\(a\\) by \\(d\\). Then there exist integers \\(q\\) and \\(r\\) such that \\(a = qd + r\\), where \\(0 \\leq r < d\\)."}, {"id": 2, "text": "We now show that every common divisor of \\(a\\) and \\(b\\) divides \\(d\\)."}, {"id": 3, "text": "Let \\(S = \\{ax + by : x, y \\in \\mathbb{Z}, \\text{ and } ax + by > 0\\}\\)."}, {"id": 4, "text": "Since \\(c\\) divides both \\(a\\) and \\(b\\), it follows that \\(c\\) divides every integer of the form \\(ax+by\\). Therefore, in particular, \\(c\\) divides \\(d = ax_0 + by_0\\)."}, {"id": 5, "text": "Having written \\(d\\) as a linear combination of \\(a\\) and \\(b\\), we first show that \\(d\\) divides both \\(a\\) and \\(b\\)."}, {"id": 6, "text": "Since \\(d \\in S\\), we know that \\(d > 0\\)."}, {"id": 7, "text": "Every positive integer can be written as a linear combination of \\(a\\) and \\(b\\)."}, {"id": 8, "text": "Thus \\(d\\) is a common divisor of \\(a\\) and \\(b\\)."}, {"id": 9, "text": "By the Well-Ordering Principle, \\(S\\) has a least element; call it \\(d\\)."}, {"id": 10, "text": "Since \\(d \\in S\\), by the definition of \\(S\\), there exist integers \\(x_0\\) and \\(y_0\\) such that \\(d = ax_0 + by_0\\)."}, {"id": 11, "text": "Suppose \\(c\\) is any common divisor of \\(a\\) and \\(b\\)."}, {"id": 12, "text": "First of all, the facts \\(a > 0\\) and \\(a = a \\times 1 + b \\times 0\\) together imply that \\(a \\times 1 + b \\times 0 > 0\\). Hence \\(a \\in S\\), and thus the set \\(S\\) is nonempty."}, {"id": 13, "text": "Since \\(a\\) and \\(b\\) are positive, \\(\\gcd(a,b)=ab\\)."}, {"id": 14, "text": "Since \\(d=ax_0 + by_0\\), we have \\(r = a - qd = a(1 - qx_0)+ b(-qy_0)\\)."}, {"id": 15, "text": "Therefore, \\(\\gcd(a,b) = ax_0 + by_0\\), which proves the theorem."}, {"id": 16, "text": "Since \\(a\\) and \\(b\\) are positive integers, \\(ab\\) is also a positive integer."}, {"id": 17, "text": "Notice that \\(r\\) is of the form \\(ax + by\\). So if \\(r > 0\\), then \\(r \\in S\\). But recall that \\(r < d\\), which contradicts the fact that \\(d\\) is the least element of \\(S\\). Hence \\(r=0\\)."}, {"id": 18, "text": "Therefore \\(d\\) divides \\(a\\), and by a similar argument, \\(d\\) divides \\(b\\)."}, {"id": 19, "text": "Thus, every common divisor of \\(a\\) and \\(b\\) divides \\(d\\)."}, {"id": 20, "text": "Since \\(d\\) divides both \\(a\\) and \\(b\\), and every common divisor of \\(a\\) and \\(b\\) divides \\(d\\), we can conclude that \\(d\\) is the greatest common divisor of \\(a\\) and \\(b\\); that is, \\(d = \\gcd(a,b)\\)."}];
+const notes = {"1": "Sentence (1) uses \\(d\\) as a divisor. Make sure \\(d\\) has already been introduced, and that the proof has announced the goal of showing \\(d\\) divides \\(a\\) and \\(b\\).", "2": "Sentence (2) is a signpost for the second major part of the proof. It belongs after \\(d\\) has already been shown to divide both \\(a\\) and \\(b\\).", "3": "Sentence (3) defines \\(S\\). It is the natural opening because later sentences use membership in \\(S\\).", "4": "Sentence (4) uses \\(c\\), so \\(c\\) must already have been introduced as an arbitrary common divisor. It also uses \\(d=ax_0+by_0\\).", "5": "Sentence (5) begins “Having written \\(d\\) as a linear combination…”. Look for the earlier sentence that actually writes \\(d\\) in that form.", "6": "Sentence (6) is true, but it does not advance the proof.", "7": "Sentence (7) is false in general. For example, if \\(a=4\\) and \\(b=6\\), every linear combination \\(ax+by\\) is even.", "8": "Sentence (8) summarizes the result that \\(d\\) divides both \\(a\\) and \\(b\\).", "9": "The Well-Ordering Principle can only be applied after the proof has shown that \\(S\\) is nonempty.", "10": "Sentence (10) unpacks the definition of \\(d\\in S\\). It must come after \\(d\\) has been chosen as the least element of \\(S\\).", "11": "Sentence (11) introduces \\(c\\). It belongs after the proof announces that it will consider every common divisor of \\(a\\) and \\(b\\).", "12": "Sentence (12) starts “First of all,” so it belongs very early, after \\(S\\) has been defined.", "13": "Sentence (13) is false in general. For instance, \\(\\gcd(2,3)=1\\), not \\(6\\).", "14": "Sentence (14) depends on both \\(a=qd+r\\) and \\(d=ax_0+by_0\\).", "15": "Sentence (15) is the final conclusion. Before using it, the proof must have established \\(d=\\gcd(a,b)\\).", "16": "Sentence (16) is true, but irrelevant to the proof of Bézout’s Identity.", "17": "Sentence (17) uses that \\(r\\) is a linear combination of \\(a,b\\), that \\(r<d\\), and that \\(d\\) is the least element of \\(S\\).", "18": "Sentence (18) concludes the first major part: \\(d\\) divides both \\(a\\) and \\(b\\).", "19": "Sentence (19) summarizes the arbitrary-common-divisor argument.", "20": "Sentence (20) combines two facts: \\(d\\) is a common divisor, and every common divisor divides \\(d\\)."};
+const correct = [3, 12, 9, 10, 5, 1, 14, 17, 18, 8, 2, 11, 4, 19, 20, 15];
+const distractors = new Set([6, 7, 13, 16]);
+
+const bank = document.getElementById('bank');
+const proof = document.getElementById('proof');
+const feedback = document.getElementById('feedback');
+const status = document.getElementById('status');
+let dragged = null;
+let hintLevel = 0;
+
+function typeset() {
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetClear?.();
+    MathJax.typesetPromise().catch(() => {});
+  }
+}
+
+function makeCard(s, location) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.draggable = true;
+  card.dataset.id = s.id;
+  card.innerHTML = `
+    <div class="sentence"><span class="num">(${s.id})</span>${s.text}</div>
+    <div class="mini-controls">
+      <button type="button" data-action="move">${location === 'bank' ? 'Add to proof' : 'Return to bank'}</button>
+      ${location === 'proof' ? '<button type="button" data-action="up">↑ Up</button><button type="button" data-action="down">↓ Down</button>' : ''}
+    </div>`;
+
+  card.addEventListener('dragstart', () => { dragged = card; card.classList.add('dragging'); });
+  card.addEventListener('dragend', () => { card.classList.remove('dragging'); dragged = null; });
+
+  card.querySelector('[data-action="move"]').addEventListener('click', () => {
+    (card.parentElement === bank ? proof : bank).appendChild(card);
+    renderAll();
+  });
+
+  const up = card.querySelector('[data-action="up"]');
+  if (up) up.addEventListener('click', () => {
+    const prev = card.previousElementSibling;
+    if (prev) proof.insertBefore(card, prev);
+    renderAll();
+  });
+
+  const down = card.querySelector('[data-action="down"]');
+  if (down) down.addEventListener('click', () => {
+    const next = card.nextElementSibling;
+    if (next) proof.insertBefore(next, card);
+    renderAll();
+  });
+
+  return card;
+}
+
+function ids(container) {
+  return [...container.children].map(x => Number(x.dataset.id));
+}
+
+function renderAll() {
+  const bankIds = ids(bank);
+  const proofIds = ids(proof);
+  const lookup = new Map(sentences.map(s => [s.id, s]));
+  bank.replaceChildren(...bankIds.map(id => makeCard(lookup.get(id), 'bank')));
+  proof.replaceChildren(...proofIds.map(id => makeCard(lookup.get(id), 'proof')));
+  status.textContent = `${proofIds.length} sentence${proofIds.length === 1 ? '' : 's'} currently in your proof.`;
+  typeset();
+}
+
+function initialize() {
+  bank.replaceChildren(...sentences.map(s => makeCard(s, 'bank')));
+  proof.replaceChildren();
+  feedback.className = 'feedback';
+  feedback.innerHTML = 'Build your proof, then choose <strong>Check proof</strong>.';
+  status.textContent = '0 sentences currently in your proof.';
+  hintLevel = 0;
+  typeset();
+}
+
+[bank, proof].forEach(list => {
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragged) return;
+    const after = getDragAfterElement(list, e.clientY);
+    if (after == null) list.appendChild(dragged);
+    else list.insertBefore(dragged, after);
+  });
+  list.addEventListener('drop', e => {
+    e.preventDefault();
+    renderAll();
+  });
+});
+
+function getDragAfterElement(container, y) {
+  return [...container.querySelectorAll('.card:not(.dragging)')].reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    return offset < 0 && offset > closest.offset ? {offset, element: child} : closest;
+  }, {offset: Number.NEGATIVE_INFINITY}).element;
+}
+
+function checkProof() {
+  const attempt = ids(proof);
+  [...document.querySelectorAll('.card')].forEach(c => c.classList.remove('correct','problem'));
+
+  if (attempt.length === correct.length && attempt.every((id,i) => id === correct[i])) {
+    feedback.className = 'feedback good';
+    feedback.innerHTML = '<strong>Good job.</strong> This is a coherent proof.';
+    typeset();
+    return;
+  }
+
+  let msg = [];
+  const bad = attempt.find(id => distractors.has(id));
+  if (bad) {
+    msg.push(`<strong>Are you sure about sentence (${bad})?</strong> ${notes[bad]}`);
+    proof.querySelector(`[data-id="${bad}"]`)?.classList.add('problem');
+  } else {
+    const missing = correct.filter(id => !attempt.includes(id));
+    if (missing.length) {
+      msg.push(`<strong>Something is missing.</strong> Think about sentence (${missing[0]}). ${notes[missing[0]]}`);
+    } else {
+      const i = attempt.findIndex((id,j) => id !== correct[j]);
+      if (i >= 0) {
+        const id = attempt[i], expected = correct[i];
+        msg.push(`<strong>Check the connection around sentence (${id}).</strong> ${notes[id]}`);
+        msg.push(`At this point, sentence (${expected}) has a stronger logical connection to what has already been established.`);
+        proof.querySelector(`[data-id="${id}"]`)?.classList.add('problem');
+      }
+    }
+  }
+
+  feedback.className = 'feedback warn';
+  feedback.innerHTML = msg.join('<br><br>');
+  typeset();
+}
+
+function giveHint() {
+  const attempt = ids(proof);
+  hintLevel++;
+  let msg;
+
+  if (!attempt.length) {
+    msg = hintLevel === 1
+      ? 'Look for the sentence that should begin the proof. Which sentence introduces the set used throughout the argument?'
+      : 'Sentence (3) is the natural opening: it defines \(S\).';
+  } else {
+    const bad = attempt.find(id => distractors.has(id));
+    if (bad) msg = notes[bad];
+    else {
+      const i = attempt.findIndex((id,j) => id !== correct[j]);
+      const idx = i === -1 ? attempt.length : i;
+      const next = correct[idx];
+
+      if (next === 12)
+        msg = 'Notice the language cue “First of all” in sentence (12). What must already have been defined before that sentence can be used?';
+      else if (next === 5)
+        msg = 'Sentence (5) begins “Having written \(d\) as a linear combination…”. Which earlier sentence makes that true?';
+      else if (next === 2)
+        msg = 'Sentence (2) says “We now show…”, which signals a new stage of the proof. What first stage must already be complete?';
+      else if (next === 15)
+        msg = 'Sentence (15) says “which proves the theorem,” so it should come only after \(d=\gcd(a,b)\) has been established.';
+      else
+        msg = `Look for what must be established before sentence (${next}) can be used.`;
+    }
+  }
+
+  feedback.className = 'feedback';
+  feedback.innerHTML = `<strong>Hint:</strong> ${msg}`;
+  typeset();
+}
+
+document.getElementById('checkBtn').addEventListener('click', checkProof);
+document.getElementById('hintBtn').addEventListener('click', giveHint);
+document.getElementById('resetBtn').addEventListener('click', initialize);
+
+initialize();
+})();
+</script>
+</body>
+</html>
