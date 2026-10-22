@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constructing a u–v Path</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#202b39;background:#f6f8fb}*{box-sizing:border-box}body{max-width:1100px;margin:25px auto;padding:0 18px}h1{font-size:1.55rem;margin-bottom:.3rem}p{line-height:1.5}.panel{background:white;border:1px solid #dbe2eb;border-radius:12px;padding:16px;margin:15px 0}svg{width:100%;height:auto;display:block;background:#fcfdff;border-radius:8px}button{border:1px solid #bac7d7;border-radius:7px;padding:9px 13px;background:white;cursor:pointer;font-weight:600}button:hover:not(:disabled){background:#eaf1fa}button:disabled{opacity:.45;cursor:default}.controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center}.primary{background:#1d6eb5;color:white;border-color:#1d6eb5}.primary:hover:not(:disabled){background:#14558f}.legend{display:flex;gap:17px;flex-wrap:wrap;font-size:.9rem;margin:10px 0}.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px}.status{font-weight:600;min-height:1.5em}.details{font-size:.92rem;color:#48596b}.chip{display:inline-block;border-radius:5px;background:#edf3f9;padding:4px 7px;margin:3px;font-family:ui-monospace,monospace}#message{margin:10px 0;min-height:2em}#graph .edge{stroke:#b5bfcc;stroke-width:2.3}#graph .recorded{stroke:#168a72;stroke-width:4.5}#graph .path{stroke:#ef981b;stroke-width:7;stroke-linecap:round}#graph .eligible{stroke:#5e94d7;stroke-width:5;stroke-dasharray:7 5;cursor:pointer}#graph .eligible:hover{stroke:#135ba4;stroke-width:8}#graph .node{fill:#e0e6ee;stroke:#a6b4c4;stroke-width:1.5}#graph .inX{fill:#2a78be;stroke:#15578e}#graph text{font-size:14px;fill:#25384b;font-weight:650;text-anchor:middle;dominant-baseline:central;pointer-events:none}#graph .labelX{fill:white}#graph .special{stroke:#e59b26;stroke-width:3}.tip{font-size:.85rem;color:#57687a}label{display:inline-flex;gap:5px;align-items:center} @media(max-width:650px){h1{font-size:1.25rem}}
+</style>
+</head>
+<body>
+<h1>Construct a <i>u</i>–<i>v</i> path</h1>
+<p>Choose a crossing edge to add its endpoint in <i>Y</i> to <i>X</i>. Every chosen edge is recorded. Once <i>v</i> is reached, highlight a path using the recorded edges.</p>
+<div class="panel">
+<div class="legend"><span><i class="dot" style="background:#2a78be"></i>Vertices in X</span><span><i class="dot" style="background:#dce3ed"></i>Vertices in Y</span><span><i class="dot" style="background:#168a72"></i>Recorded edges</span><span><i class="dot" style="background:#ef981b"></i>Final path</span><span><i class="dot" style="background:#5e94d7"></i>Eligible crossing edges</span></div>
+<svg id="graph" viewBox="0 0 860 480" role="img" aria-label="Interactive graph with fifteen vertices"></svg>
+<div id="message" class="status" aria-live="polite"></div>
+<div class="controls"><button id="start" class="primary">Add u to X</button><button id="auto">Choose a crossing edge</button><button id="demo" class="primary">Start guided example</button><button id="undo">Undo</button><button id="reveal" class="primary">Highlight u–v path</button><button id="reset">Reset</button><label><input id="hints" type="checkbox" checked> Show eligible edges</label></div>
+<p class="tip" id="demoNote">Click the guided example button repeatedly to see one possible sequence of additions.</p><p class="tip">Click a dashed blue crossing edge to choose it yourself. The automatic button makes one valid choice. Different choices can produce different recorded edges and paths.</p>
+</div>
+<div class="panel"><strong>Current partition</strong><div id="sets" class="details"></div><p class="details" id="invariant"></p><p class="details" id="edgeLog"></p></div>
+<div class="panel"><strong>Questions to consider</strong><ol><li>Why is every vertex in X reachable from u after each addition?</li><li>If v is still in Y, why must there be an edge between X and Y?</li><li>Why must the procedure eventually reach v?</li><li>How can you use the recorded edges to obtain a u–v path?</li></ol></div>
+<script>
+'use strict';
+const vertices=[
+{id:'u',x:70,y:225},{id:'a',x:205,y:75},{id:'b',x:200,y:210},{id:'c',x:200,y:380},
+{id:'d',x:340,y:55},{id:'e',x:350,y:175},{id:'f',x:345,y:305},{id:'g',x:340,y:425},
+{id:'h',x:485,y:75},{id:'i',x:490,y:210},{id:'j',x:485,y:355},
+{id:'k',x:625,y:65},{id:'l',x:630,y:200},{id:'m',x:630,y:355},{id:'v',x:785,y:215}];
+const rawEdges=[['u','a'],['u','b'],['u','c'],['a','b'],['b','c'],['a','d'],['a','e'],['b','e'],['b','f'],['c','f'],['c','g'],['d','e'],['e','f'],['f','g'],['d','h'],['e','h'],['e','i'],['f','i'],['f','j'],['g','j'],['h','i'],['i','j'],['h','k'],['h','l'],['i','k'],['i','l'],['i','m'],['j','m'],['k','l'],['l','m'],['k','v'],['l','v'],['m','v']];
+const byId=Object.fromEntries(vertices.map(n=>[n.id,n]));
+let X=new Set(),recordedEdges=[],history=[],shown=false;
+const demoEdges=[['u','a'],['a','e'],['u','b'],['b','f'],['f','i'],['i','l'],['l','v']];
+let demoStep=-1;
+const demoMessages=[
+ 'Guided example: first add u. Next, add a via u–a.',
+ 'Add a. The root still has undiscovered neighbors b and c.',
+ 'Add e via a–e. The vertices b and c have not yet been added.',
+ 'Add b via u–b. We can choose a crossing edge from a different part of X.',
+ 'Add f via b–f. We are free to return to another branch.',
+ 'Add i via f–i. Each recorded edge joins a newly added vertex to an earlier vertex.',
+ 'Add l via i–l. The process still has not reached v.',
+ 'Add v via l–v. The procedure is complete. Now highlight the u–v path.',
+];
+const svg=document.getElementById('graph'),ns='http://www.w3.org/2000/svg';
+const el=(tag,attrs)=>{const x=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))x.setAttribute(k,v);return x};
+const key=(a,b)=>[a,b].sort().join('|');
+function snapshot(){history.push({X:[...X],recordedEdges:recordedEdges.map(e=>[...e]),shown})}
+function crossing(){return rawEdges.filter(([a,b])=>X.has(a)!==X.has(b))}
+function addEdge(a,b){if(!X.size||X.has('v')||X.has(a)===X.has(b))return;snapshot();const y=X.has(a)?b:a;X.add(y);recordedEdges.push([a,b]);shown=false;render()}
+function start(){if(X.size)return;snapshot();X.add('u');render()}
+function undo(){if(!history.length)return;const s=history.pop();X=new Set(s.X);recordedEdges=s.recordedEdges;shown=s.shown;render()}
+function reset(){X=new Set();recordedEdges=[];history=[];shown=false;demoStep=-1;render()}
+function advanceDemo(){
+ if(demoStep===-1){reset();start();demoStep=0;}
+ else if(demoStep<demoEdges.length){const [a,b]=demoEdges[demoStep];addEdge(a,b);demoStep++;}
+ else {shown=true;render();demoStep=-1;}
+ render();
+}
+function finalPath(){const adj=Object.fromEntries([...X].map(x=>[x,[]]));for(const [a,b] of recordedEdges){adj[a].push(b);adj[b].push(a)}const q=['u'],parent={u:null};for(let i=0;i<q.length;i++){const a=q[i];if(a==='v')break;for(const b of adj[a])if(!(b in parent)){parent[b]=a;q.push(b)}}if(!('v' in parent))return [];const p=[];for(let x='v';parent[x]!==null;x=parent[x])p.push(key(x,parent[x]));return p}
+function render(){svg.replaceChildren();const eligible=crossing(),path=shown?new Set(finalPath()):new Set();for(const [a,b] of rawEdges){const k=key(a,b),recorded=recordedEdges.some(e=>key(...e)===k),isEligible=eligible.some(e=>key(...e)===k)&&!X.has('v');const line=el('line',{x1:byId[a].x,y1:byId[a].y,x2:byId[b].x,y2:byId[b].y,class:'edge'+(recorded?' recorded':'')+(path.has(k)?' path':'')});svg.appendChild(line);if(isEligible){const hit=el('line',{x1:byId[a].x,y1:byId[a].y,x2:byId[b].x,y2:byId[b].y,class:document.getElementById('hints').checked?'eligible':'',stroke:'transparent','stroke-width':16});hit.style.cursor='pointer';hit.addEventListener('click',()=>{demoStep=-1;addEdge(a,b)});const title=el('title',{});title.textContent=`Choose edge ${a}–${b}`;hit.appendChild(title);svg.appendChild(hit)}}for(const n of vertices){const circle=el('circle',{cx:n.x,cy:n.y,r:20,class:'node'+(X.has(n.id)?' inX':'')+(['u','v'].includes(n.id)?' special':'')});svg.appendChild(circle);const t=el('text',{x:n.x,y:n.y+1,class:X.has(n.id)?'labelX':''});t.textContent=n.id;svg.appendChild(t)}document.getElementById('sets').innerHTML=`<div><b>X</b> = ${X.size?'<span class="chip">'+[...X].join(', ')+'</span>':'∅'}</div><div><b>Y</b> = <span class="chip">${vertices.filter(n=>!X.has(n.id)).map(n=>n.id).join(', ')||'∅'}</span></div>`;document.getElementById('invariant').textContent=X.size?`Reachability invariant: each of the ${X.size} vertices in X is connected to u by recorded edges.`:'No vertices have been added yet.';document.getElementById('edgeLog').textContent='Recorded edges: '+(recordedEdges.length?recordedEdges.map(([a,b])=>`${a}–${b}`).join(', '):'none');document.getElementById('message').textContent=!X.size?'Start by adding u to X.':!X.has('v')?`${X.size} of ${vertices.length} vertices in X. Choose a crossing edge.`:shown?'The orange edges show the u–v path obtained from the recorded edges.':'v is in X. Highlight the u–v path using the recorded edges.';document.getElementById('demo').textContent=demoStep<0?'Start guided example':demoStep<demoEdges.length?'Next guided step':'Reveal guided path';document.getElementById('demoNote').textContent=demoStep>=0?demoMessages[demoStep]:'Click the guided example button repeatedly to see one possible sequence of additions.';document.getElementById('start').disabled=!!X.size;document.getElementById('auto').disabled=!X.size||X.has('v');document.getElementById('undo').disabled=!history.length;document.getElementById('reveal').disabled=!X.has('v');}
+document.getElementById('demo').onclick=advanceDemo;document.getElementById('start').onclick=()=>{demoStep=-1;start()};document.getElementById('auto').onclick=()=>{demoStep=-1;const e=crossing();if(e.length)addEdge(...e[Math.floor(Math.random()*e.length)])};document.getElementById('undo').onclick=()=>{demoStep=-1;undo()};document.getElementById('reset').onclick=reset;document.getElementById('reveal').onclick=()=>{if(X.has('v')){snapshot();shown=true;render()}};document.getElementById('hints').onchange=render;render();
+</script>
+</body></html>
